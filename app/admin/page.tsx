@@ -7,6 +7,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { Button } from "@/components/ui/button";
 import VotingABI from "@/artifacts/contracts/Voting.sol/Voting.json";
 import Image from 'next/image';
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 
 const ADMIN_ADDRESS = "0x4F7E7fDD48154aedc2E472F4706fEc3f75f1F7f9";
 const CONTRACT_ADDRESS = "0xf2327Ca1c1c9e7d88Bd7ec7945D1B823417E0Bee";
@@ -21,6 +23,7 @@ export default function Admin() {
   const [userAddress, setUserAddress] = useState('');
   const [winner, setWinner] = useState<Winner | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { width, height } = useWindowSize()
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -106,30 +109,56 @@ export default function Admin() {
     </div>
       {winner && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-card text-card-foreground p-8 rounded-lg shadow-xl text-center max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Election Winner</h2>
-            
-            {winner.imageUrl && (
-              <div className="relative w-48 h-48 mx-auto mb-4">
-                <Image 
-                  src={getIPFSGatewayURL(winner.imageUrl)}
-                  alt={winner.name}
-                  fill
-                  className="rounded-full object-cover"
-                  unoptimized
-                />
+          <Confetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={200}
+          />
+          <div className="bg-card text-card-foreground p-8 rounded-lg shadow-xl text-center max-w-md w-full animate-bounce-slow">
+            <div className="relative">
+              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                <span className="text-6xl">👑</span>
               </div>
-            )}
-            
-            <p className="text-xl mb-2">{winner.name}</p>
-            <p className="text-lg text-gray-600 mb-4">Total Votes: {winner.voteCount}</p>
-            
-            <Button 
-              onClick={() => setWinner(null)}
-              className="mt-4 bg-blue-500 hover:bg-blue-700"
-            >
-              Close
-            </Button>
+              
+              <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 text-transparent bg-clip-text">
+                Winner Announced!
+              </h2>
+              
+              {winner.imageUrl && (
+                <div className="relative w-48 h-48 mx-auto mb-6">
+                  <div className="absolute inset-0 animate-pulse-slow rounded-full bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 p-1">
+                    <Image 
+                      src={getIPFSGatewayURL(winner.imageUrl)}
+                      alt={winner.name}
+                      fill
+                      className="rounded-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <p className="text-2xl font-bold text-foreground">{winner.name}</p>
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="text-4xl">🏆</span>
+                  <p className="text-xl text-foreground/80">
+                    {winner.voteCount} {winner.voteCount === 1 ? 'Vote' : 'Votes'}
+                  </p>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={() => setWinner(null)}
+                className="mt-8 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 
+                  hover:from-yellow-500 hover:via-red-600 hover:to-pink-600 
+                  text-white font-bold py-3 px-6 rounded-full transform transition-all
+                  hover:scale-105 active:scale-95"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}

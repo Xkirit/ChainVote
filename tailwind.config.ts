@@ -85,6 +85,9 @@ export default {
   			"spotlight": "spotlight 2s ease .75s 1 forwards",
   			"accordion-down": "accordion-down 0.2s ease-out",
   			"accordion-up": "accordion-up 0.2s ease-out",
+				'spin-slow': 'spin 3s linear infinite',
+				'bounce': 'bounce 3s infinite',
+				'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   		},
   		keyframes: {
   			meteor: {
