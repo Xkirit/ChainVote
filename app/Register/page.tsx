@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { Loader2 } from "lucide-react";
 
 const ADMIN_ADDRESS = "0x4F7E7fDD48154aedc2E472F4706fEc3f75f1F7f9";
 const CONTRACT_ADDRESS = "0xf2327Ca1c1c9e7d88Bd7ec7945D1B823417E0Bee";
