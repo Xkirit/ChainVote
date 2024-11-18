@@ -9,7 +9,7 @@ import VotingABI from "@/artifacts/contracts/Voting.sol/Voting.json";
 import Image from 'next/image';
 
 const ADMIN_ADDRESS = "0x4F7E7fDD48154aedc2E472F4706fEc3f75f1F7f9";
-const CONTRACT_ADDRESS = "0xCa89Df34B2D4F6B5B75590f978D7D7e85915ef7F";
+const CONTRACT_ADDRESS = "0xf2327Ca1c1c9e7d88Bd7ec7945D1B823417E0Bee";
 
 interface Winner {
   name: string;
@@ -57,9 +57,12 @@ export default function Admin() {
       const [_, __, ___, imageUrl] = await contract.getCandidate(winnerId);
 
       // End the voting
+      const loadingToastId = toast.loading("Ending voting session...");
       const tx = await contract.endVotingAndReset();
-      toast.loading("Ending voting session...");
       await tx.wait();
+      
+      // Dismiss the loading toast
+      toast.dismiss(loadingToastId);
       
       // Show winner dialog only after transaction is confirmed
       setWinner({
@@ -91,7 +94,8 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="h-screen mx-auto p-4">
+      <div className="flex justify-center items-center mt-10">
       <Button 
         onClick={handleEndVoting} 
         disabled={isProcessing}
@@ -99,10 +103,10 @@ export default function Admin() {
       >
         {isProcessing ? 'Processing...' : 'End Voting & Reset'}
       </Button>
-
+    </div>
       {winner && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md w-full">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-card text-card-foreground p-8 rounded-lg shadow-xl text-center max-w-md w-full">
             <h2 className="text-2xl font-bold mb-4">Election Winner</h2>
             
             {winner.imageUrl && (

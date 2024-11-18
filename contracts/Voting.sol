@@ -18,12 +18,16 @@ contract Voting {
     uint256 public candidatesCount;
     address public admin;
     uint256 public currentVotingSession;
+    string public electionTitle;
+    bool public isElectionActive;
 
     // Events
     event CandidateAdded(uint256 indexed id, string name, string party);
     event VoteCast(uint256 indexed candidateId, address indexed voter);
     event VotingReset(uint256 timestamp);
     event WinnerDeclared(uint256 indexed id, string name, uint256 voteCount);
+    event ElectionStarted(string title, uint256 timestamp);
+    event ElectionEnded(string title, uint256 timestamp);
     
     // Constructor
     constructor(address _admin) {
@@ -44,6 +48,7 @@ contract Voting {
         string memory _party,
         string memory _imageUrl
     ) public onlyAdmin {
+        require(isElectionActive, "Election has not been started");
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(_age > 0, "Age must be greater than 0");
         require(bytes(_party).length > 0, "Party cannot be empty");
@@ -62,6 +67,8 @@ contract Voting {
     }
 
     function endVotingAndReset() public onlyAdmin {
+        require(isElectionActive, "No active election");
+        
         uint256 winningVoteCount = 0;
         uint256 winnerId = 0;
         string memory winnerName = "";
@@ -80,14 +87,19 @@ contract Voting {
             emit WinnerDeclared(winnerId, winnerName, winningVoteCount);
         }
         
-        // Reset all votes and voting status
+        // Reset election state
+        string memory endedTitle = electionTitle;
+        delete electionTitle;
+        isElectionActive = false;
+        
+        // Reset candidates
         for(uint256 i = 1; i <= candidatesCount; i++) {
             delete candidates[i];
         }
         
         candidatesCount = 0;
-        currentVotingSession++; // Increment session ID to reset voting status
         
+        emit ElectionEnded(endedTitle, block.timestamp);
         emit VotingReset(block.timestamp);
     }
 
@@ -147,5 +159,17 @@ contract Voting {
             candidates[winningCandidateId].name,
             candidates[winningCandidateId].voteCount
         );
+    }
+
+    // Start election with title
+    function startElection(string memory _title) public onlyAdmin {
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(!isElectionActive, "Election is already active");
+        
+        electionTitle = _title;
+        isElectionActive = true;
+        currentVotingSession++;
+        
+        emit ElectionStarted(_title, block.timestamp);
     }
 }

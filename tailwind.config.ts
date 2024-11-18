@@ -1,4 +1,20 @@
 import type { Config } from "tailwindcss";
+const defaultTheme = require("tailwindcss/defaultTheme");
+const colors = require("tailwindcss/colors");
+const {
+  default: flattenColorPalette,
+} = require("tailwindcss/lib/util/flattenColorPalette");
+
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+ 
+  addBase({
+    ":root": newVars,
+  });
+}
 
 export default {
     darkMode: ["class"],
@@ -6,9 +22,16 @@ export default {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
   	extend: {
+			fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+				rajdhani: ['Rajdhani', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
+				nunito: ['Nunito', 'sans-serif'], // Add your font here
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -55,7 +78,42 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		animation: {
+  			"meteor-effect": "meteor 5s linear infinite",
+  			shimmer: "shimmer 2s linear infinite",
+  			"spotlight": "spotlight 2s ease .75s 1 forwards",
+  			"accordion-down": "accordion-down 0.2s ease-out",
+  			"accordion-up": "accordion-up 0.2s ease-out",
+  		},
+  		keyframes: {
+  			meteor: {
+  				"0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+  				"70%": { opacity: "1" },
+  				"100%": {
+  					transform: "rotate(215deg) translateX(-500px)",
+  					opacity: "0",
+  				},
+  			},
+  			shimmer: {
+  				from: {
+  					"backgroundPosition": "0 0"
+  				},
+  				to: {
+  					"backgroundPosition": "-200% 0"
+  				}
+  			},
+  			spotlight: {
+  				"0%": {
+  					opacity: "0",
+  					transform: "translate(-72%, -62%) scale(0.5)",
+  				},
+  				"100%": {
+  					opacity: "1",
+  					transform: "translate(-50%,-40%) scale(1)",
+  				},
+  			},
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate"),

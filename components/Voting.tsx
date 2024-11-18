@@ -4,16 +4,34 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import VotingABI from '@/artifacts/contracts/Voting.sol/Voting.json';
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 
 const ADMIN_ADDRESS = "0x4F7E7fDD48154aedc2E472F4706fEc3f75f1F7f9";
-const CONTRACT_ADDRESS = "0xCa89Df34B2D4F6B5B75590f978D7D7e85915ef7F"; // Add your deployed contract address here
+const CONTRACT_ADDRESS = "0xf2327Ca1c1c9e7d88Bd7ec7945D1B823417E0Bee";
 
 const VotingDapp = () => {
-  const [votingContract, setVotingContract] = useState(null);
-  const [userAddress, setUserAddress] = useState(null);
-  const [candidates, setCandidates] = useState([]);
+  const [votingContract, setVotingContract] = useState<ethers.Contract | null>(null);
+  const [userAddress, setUserAddress] = useState<string | null>(null);
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [hasVoted, setHasVoted] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [electionTitle, setElectionTitle] = useState('');
+  const [isElectionActive, setIsElectionActive] = useState(false);
+
+  const fetchElectionDetails = async (contract: ethers.Contract) => {
+    try {
+      const active = await contract.isElectionActive();
+      setIsElectionActive(active);
+      
+      if (active) {
+        const title = await contract.electionTitle();
+        console.log("Election Title:", title); // Debug log
+        setElectionTitle(title);
+      }
+    } catch (error) {
+      console.error("Error fetching election details:", error);
+    }
+  };
 
   useEffect(() => {
     const initializeContract = async () => {
@@ -22,16 +40,11 @@ const VotingDapp = () => {
           throw new Error("Please install MetaMask!");
         }
 
-        // Connect to MetaMask
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
         setUserAddress(address);
 
-        console.log("Connected address:", address);
-        console.log("Contract address:", CONTRACT_ADDRESS);
-
-        // Initialize contract
         const contract = new ethers.Contract(
           CONTRACT_ADDRESS,
           VotingABI.abi,
@@ -40,28 +53,26 @@ const VotingDapp = () => {
 
         setVotingContract(contract);
 
+        // Fetch election details
+        await fetchElectionDetails(contract);
+
         // Check if user has voted
-        try {
-          const voted = await contract.hasUserVoted(address);
-          console.log("Has voted:", voted);
-          setHasVoted(voted);
-        } catch (voteError) {
-          console.error("Error checking vote status:", voteError);
-        }
+        const voted = await contract.hasUserVoted(address);
+        setHasVoted(voted);
 
         // Fetch candidates
         await fetchCandidates(contract);
 
       } catch (error) {
         console.error("Error initializing:", error);
-        
+        setError(error instanceof Error ? error.message : "An error occurred");
       }
     };
 
     initializeContract();
   }, []);
 
-  const fetchCandidates = async (contractInstance) => {
+  const fetchCandidates = async (contractInstance: ethers.Contract | null) => {
     const contract = contractInstance || votingContract;
     if (!contract) return;
 
@@ -92,7 +103,7 @@ const VotingDapp = () => {
     }
   };
 
-  const handleVote = async (candidateId) => {
+  const handleVote = async (candidateId: number) => {
     try {
       if (!votingContract) throw new Error("Contract not initialized");
       
@@ -105,7 +116,7 @@ const VotingDapp = () => {
       await fetchCandidates(votingContract);
     } catch (error) {
       console.error("Error voting:", error);
-      setError(error.message);
+      setError(error as string);
     }
   };
 
@@ -121,49 +132,76 @@ const VotingDapp = () => {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-5xl font-serif text-white font-bold mb-4 text-center">VOTING DAPP</h1>
-      
-      {userAddress && (
-        <div className="fixed top-0 right-0 p-4">
-          <span className="text-gray-600 block">
-            Connected: {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
-          </span>
+    <div className="container mx-auto px-4 py-8 bg-background">
+      {isElectionActive ? (
+        <>
+          {electionTitle && (
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-serif text-foreground font-bold">
+                {electionTitle}
+              </h1>
+              <div className="mt-2 text-gray-300">
+                Active Election
+              </div>
+            </div>
+          )}
+          
+          <div className="fixed bottom-4 right-4 bg-green-500/10 text-green-500 px-4 py-2 rounded-full border border-green-500/20 font-medium flex items-center gap-2">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+            Election Live
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {candidates.map((candidate) => (
+              <div key={candidate.id} className="bg-card text-card-foreground border rounded-lg p-4 shadow">
+                {candidate.imageUrl && (
+                  <div className="relative w-full h-48 mb-4">
+                    <Image 
+                      src={getIPFSGatewayURL(candidate.imageUrl)}
+                      alt={candidate.name}
+                      fill
+                      className="rounded-lg object-cover"
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <h3 className="text-xl font-semibold text-foreground">{candidate.name}</h3>
+                <p className="text-muted-foreground">{candidate.party}</p>
+                <p className="text-muted-foreground">Votes: {candidate.voteCount}</p>
+                
+                <button
+                  onClick={() => handleVote(candidate.id)}
+                  disabled={hasVoted}
+                  
+                  className={`mt-4 w-full py-2 px-4 rounded-lg ${
+                    hasVoted 
+                      ? 'bg-gray-300 cursor-not-allowed' 
+                      : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                  }`}
+                >
+                  {hasVoted ? 'Already Voted' : 'Vote'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {candidates.length === 0 && (
+            <div className="text-center text-gray-300 mt-8">
+              No candidates registered yet.
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center text-white">
+          <h1 className="text-4xl text-foreground font-bold mb-4">No Active Election</h1>
+          <p className="text-foreground">
+            Please wait for an election to be started by the administrator.
+          </p>
         </div>
       )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {candidates.map((candidate) => (
-          <div key={candidate.id} className="border rounded-lg p-4 shadow bg-white">
-            {candidate.imageUrl && (
-              <div className="relative w-full h-48 mb-4">
-                <Image 
-                  src={getIPFSGatewayURL(candidate.imageUrl)}
-                  alt={candidate.name}
-                  fill
-                  className="rounded-lg object-cover"
-                  unoptimized
-                />
-              </div>
-            )}
-            <h3 className="text-xl font-semibold">{candidate.name}</h3>
-            <p className="text-gray-600">{candidate.party}</p>
-            <p className="text-gray-500">Votes: {candidate.voteCount}</p>
-            
-            <button
-              onClick={() => handleVote(candidate.id)}
-              disabled={hasVoted}
-              className={`mt-4 w-full py-2 px-4 rounded ${
-                hasVoted 
-                  ? 'bg-gray-300 cursor-not-allowed' 
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-              }`}
-            >
-              {hasVoted ? 'Already Voted' : 'Vote'}
-            </button>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
