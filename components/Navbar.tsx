@@ -44,7 +44,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className={`navbar sticky top-0 bg-background border-b ${poppins.className}`}>
+    <div className={`navbar sticky top-0 z-50 bg-background border-b ${poppins.className}`}>
       <div className="navbar-start">
         <div className="dropdown">
           <div 
