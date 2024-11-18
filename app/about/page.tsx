@@ -7,13 +7,13 @@ const AboutPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-5xl font-bold text-center mb-12">About Our Decentralized Voting System</h1>
+        <h1 className="text-5xl font-bold text-center mb-12">About ChainVote</h1>
 
         {/* Introduction */}
         <section className="mb-12">
           <h2 className="text-3xl font-semibold mb-4">What is this dApp?</h2>
           <p className="text-gray-300 leading-relaxed">
-            Our decentralized voting application (dApp) is built on the Ethereum blockchain, 
+            ChainVote is built on the Ethereum blockchain, 
             ensuring transparent, secure, and tamper-proof elections. It leverages smart contracts 
             to maintain the integrity of the voting process while providing a user-friendly interface 
             for both administrators and voters.
@@ -117,7 +117,7 @@ const AboutPage = () => {
           </p>
           <div className="flex justify-center space-x-4">
             <a 
-              href="https://github.com/yourusername/voting-dapp" 
+              href="https://github.com/Xkirit/VoteChain" 
               target="_blank" 
               rel="noopener noreferrer"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
