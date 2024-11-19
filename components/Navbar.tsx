@@ -71,14 +71,14 @@ const Navbar = () => {
           {isMenuOpen && (
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-background rounded-box z-[1] mt-3 w-52 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-card rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li>
                 <Link href="/" className="text-foreground" onClick={handleLinkClick}>Vote</Link>
               </li>
               <li>
                 <a className="text-foreground">Admin</a>
-                <ul className="p-2 bg-background">
+                <ul className="p-2 bg-card">
                   <li>
                     <Link href="/admin" className="text-foreground" onClick={handleLinkClick}>
                       Election Control
@@ -107,7 +107,7 @@ const Navbar = () => {
           <li>
             <details ref={detailsRef}>
               <summary className="text-foreground">Admin</summary>
-              <ul className="p-2 bg-background">
+              <ul className="p-2 bg-card">
                 <li>
                   <Link href="/admin" className="text-foreground" onClick={handleLinkClick}>
                     Election Control

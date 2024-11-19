@@ -171,7 +171,7 @@ const VotingDapp = () => {
               <h1 className="text-4xl font-serif text-foreground font-bold">
                 {electionTitle}
               </h1>
-              <div className="mt-2 text-gray-300">
+              <div className="mt-2 text-muted-foreground">
                 Active Election
               </div>
             </div>
